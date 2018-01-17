@@ -8,25 +8,40 @@
 
 import Foundation
 
-class Concentration  {
+struct Concentration  {
     
-    var cards = [Card]()
+    private(set) var cards = [Card]()
     
-    var indexOfOneAndOnlyFaceUpCard : Int?
-    func chooseCard(at index : Int)  {
+    private var indexOfOneAndOnlyFaceUpCard : Int?{
+        get{
+            var foundIndex : Int?
+            for index in cards.indices{
+                if cards[index].isFaceUp{
+                    if foundIndex == nil{
+                        foundIndex = index
+                    }else{
+                        foundIndex = nil
+                    }
+                }
+            }
+            return foundIndex
+        }
+        set {
+            for index in cards.indices{
+                cards[index].isFaceUp = (index == newValue)
+            }
+        }
+    }
+    
+    mutating func chooseCard(at index : Int)  {
         if !cards[index].isMatched{
             if let matchIndex = indexOfOneAndOnlyFaceUpCard, matchIndex != index {
-                if cards[matchIndex].identifier == cards[index].identifier{
+                if cards[matchIndex] == cards[index] {
                     cards[matchIndex].isMatched = true
                     cards[index].isMatched = true
                 }
                 cards[index].isFaceUp = true
-                indexOfOneAndOnlyFaceUpCard = nil
             }else{
-                for flipDownIndex in cards.indices{
-                    cards[flipDownIndex].isFaceUp = false
-                }
-                cards[index].isFaceUp = true
                 indexOfOneAndOnlyFaceUpCard = index
             }
         }
@@ -38,10 +53,7 @@ class Concentration  {
             cards += [card, card]
         }
         for index in cards.indices {
-            let randomIndex = Int(arc4random_uniform(UInt32(cards.count)))
-            let tempCard = cards[index]
-            cards[index] = cards[randomIndex]
-            cards[randomIndex] = tempCard
+            cards.swapAt(index, cards.count.arc4random)
         }
     }
 }
